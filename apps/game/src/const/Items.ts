@@ -1,6 +1,6 @@
 import type { ITEMS_TYPE } from "../types/itemsType";
 
-export const ITEMS: ITEMS_TYPE[] = [
+const ITEMS: ITEMS_TYPE[] = [
   {
     name: "1 Coin",
     probability: 0.65,
@@ -71,3 +71,5 @@ export const ITEMS: ITEMS_TYPE[] = [
     }
   },
 ]
+
+export default ITEMS
