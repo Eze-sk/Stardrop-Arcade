@@ -1,6 +1,6 @@
 type arms = "HeavyMachine" | "shotgun" | "sheriffBadge" | "WagonWheel"
 
-type affection = {
+type Effect = {
   upLife?: number,
   upSpeed?: number, // multiplier
   upCoins?: number,
@@ -12,5 +12,5 @@ export type ITEMS_TYPE = {
   name: string
   probability: number
   spriteFrame: number
-  affection: affection
+  effect: Effect
 }
