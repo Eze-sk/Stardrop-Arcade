@@ -1,10 +1,12 @@
-type arms = "HeavyMachine" | "shotgun" | "sheriffBadge" | "WagonWheel"
+type arms = "heavyMachine" | "shotgun" | "sheriffBadge" | "wagonWheel"
 
-type Effect = {
+export type Effect = {
   upLife?: number,
-  upSpeed?: number, // multiplier
+  upSpeed?: number,
   upCoins?: number,
   arms?: arms,
+  tombstone?: boolean,
+  smokeBomb?: boolean,
   durationEffect?: number,
 }
 
