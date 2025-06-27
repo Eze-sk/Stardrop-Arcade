@@ -4,11 +4,18 @@ import TEXTURE_KEYS from "../const/TextureKeys";
 import type { Effect, ITEMS_TYPE } from "../types/itemsType";
 import UI from "./UI";
 
+type EffectFunction = {
+  duration: number,
+  effect?: number
+  weapon?: string
+}
+
 export default class Player extends Phaser.Physics.Arcade.Sprite {
   private KeysMove!: Phaser.Types.Input.Keyboard.CursorKeys
   private Keyshoot!: Phaser.Types.Input.Keyboard.CursorKeys
   private lastShotTime: number = 0
   private shotCooldown: number = 400
+  private currentWeapon: string = "default"
 
   private inventory: ITEMS_TYPE[] = []
 
@@ -58,8 +65,27 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     })
   }
 
-  private durationEffect(time: number, effect: () => void) {
-    this.scene.time.delayedCall(time, effect)
+  public collectItem(item: ITEMS_TYPE) {
+    const effect = item.effect
+
+    if (this.inventory.length > 1) {
+      this.activateItem()
+    }
+
+    if (effect?.upCoins) {
+      this.coins += effect.upCoins
+      this.updateUI.updateCoins(this.coins)
+    } else if (effect?.upLife) {
+      this.lifes += effect.upLife;
+      this.updateUI.updateLife(this.lifes)
+    } else {
+      this.inventory.push(item)
+      this.updateUI.updateInventory(item.spriteFrame)
+    }
+  }
+
+  private durationEffect(time: number, resetEffect: () => void) {
+    this.scene.time.delayedCall(time, resetEffect)
   }
 
   private clearInventory() {
@@ -67,7 +93,26 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.updateUI.clearInventory()
   }
 
-  private itemCoffee(duration: number, effect: number) {
+  private activateItem() {
+    if (this.inventory.length === 0) return
+
+    const item = this.inventory.shift() as ITEMS_TYPE
+    const effect = item.effect
+
+    if (effect.upSpeed) {
+      this.itemCoffee({ duration: effect.durationEffect ?? 1000, effect: effect.upSpeed })
+    }
+
+    if (effect.weapon) {
+      this.setWapon({ duration: effect.durationEffect ?? 1000, weapon: effect.weapon })
+    }
+
+    this.clearInventory()
+  }
+
+  private itemCoffee({ duration, effect }: EffectFunction) {
+    effect = effect || 1
+
     this.speed *= effect
 
     console.log(this.speed)
@@ -78,40 +123,36 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     })
   }
 
-  private activateItem() {
-    if (this.inventory.length === 0) return
+  private setWapon({ duration, weapon }: EffectFunction) {
+    weapon = weapon || "default"
 
-    const item = this.inventory.shift() as ITEMS_TYPE
-
-    if (item.effect.upSpeed) {
-      this.itemCoffee(item.effect.durationEffect ?? 1000, item.effect.upSpeed)
-    }
-
-    this.clearInventory()
-  }
-
-  public collectItem(item: ITEMS_TYPE) {
-    const effect = item.effect
-
-    if (this.inventory.length > 1) {
-      this.activateItem()
-    }
-
-    // estos son items que no entran en el inventario
-    if (effect?.upCoins) {
-      this.coins += effect.upCoins
-      this.updateUI.updateCoins(this.coins)
-    } else if (effect?.upLife) {
-      this.lifes += effect.upLife;
-      this.updateUI.updateLife(this.lifes)
-    } else {
-      // estos son items que entran en el inventario
-      this.inventory.push(item)
-      this.updateUI.updateInventory(item.spriteFrame)
-    }
+    this.currentWeapon = weapon
+    this.durationEffect(duration, () => {
+      this.currentWeapon = "default"
+      this.shotCooldown = 400
+    })
   }
 
   private drawBullet(dir: Phaser.Math.Vector2) {
+    switch (this.currentWeapon) {
+      case "heavyMachine":
+        this.heavyMachine(dir, 100);
+        break;
+      case "shotgun":
+        this.shootShotgun(dir);
+        break;
+      case "sheriffBadge":
+        this.shootSheriffBadge(dir);
+        break;
+      case "wagonWheel":
+        this.shootWagonWheel();
+        break
+      default:
+        this.shootBasic(dir);
+    }
+  }
+
+  private shootBasic(dir: Phaser.Math.Vector2) {
     const bullet = this.bullets.get(this.x, this.y, TEXTURE_KEYS.BULLET) as Phaser.Physics.Arcade.Sprite;
 
     if (!bullet) return;
@@ -131,6 +172,36 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.time.delayedCall(5000, () => {
       if (bullet.active) bullet.destroy();
     });
+  }
+
+  private shootShotgun(dir: Phaser.Math.Vector2) {
+    const baseAngle = dir.angle()
+    const spread = Phaser.Math.DegToRad(15); // 15 degrees spread
+
+    for (let i = -1; i <= 1; i++) {
+      const angle = baseAngle + i * spread;
+      const direction = new Phaser.Math.Vector2(Math.cos(angle), Math.sin(angle));
+      this.shootBasic(direction);
+    }
+  }
+
+  private shootSheriffBadge(dir: Phaser.Math.Vector2) {
+    this.itemCoffee({ duration: 1000, effect: 1.5 }) // Increase speed for sheriff badge
+    this.shotCooldown = 200 // Reduce cooldown for sheriff badge
+    this.shootShotgun(dir);
+  }
+
+  private heavyMachine(dir: Phaser.Math.Vector2, fireRate: number = 100) {
+    this.shotCooldown = fireRate // Reduce cooldown for heavy machine gun
+    this.shootBasic(dir);
+  }
+
+  private shootWagonWheel() {
+    for (let i = -1; i <= 8; i++) {
+      const angle = Phaser.Math.DegToRad(i * 45); // 8 directions, 45 degrees apart
+      const direction = new Phaser.Math.Vector2(Math.cos(angle), Math.sin(angle));
+      this.shootBasic(direction);
+    }
   }
 
   update(time: number) {
