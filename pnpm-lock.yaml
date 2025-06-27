@@ -18,7 +18,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  apps/game:
+  apps/journey-of-the-prairie-king:
     dependencies:
       phaser:
         specifier: ^3.90.0
