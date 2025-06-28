@@ -1,3 +1,4 @@
+import '@fontsource-variable/pixelify-sans';
 import "./style.css"
 
 import Phaser from 'phaser';
