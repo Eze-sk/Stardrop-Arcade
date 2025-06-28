@@ -11,8 +11,6 @@ import EnemyAnims from "../objects/Anims/EnemyAnims";
 import type Enemy from "../objects/Enemy";
 import type { ITEMS_TYPE } from "../types/itemsType";
 
-import UI from "../objects/UI";
-
 export default class Game extends Phaser.Scene {
   private player!: Player
   private enemiesGroup!: Phaser.Physics.Arcade.Group
@@ -72,8 +70,9 @@ export default class Game extends Phaser.Scene {
     )
   }
 
-  update(time: number) {
+  update(time: number, delta: number) {
     this.player.update(time)
+    this.waveManager.update(delta);
 
     this.enemiesGroup.children.iterate((enemyObj) => {
       const enemy = enemyObj as Enemy;
