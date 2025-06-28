@@ -16,6 +16,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   private lastShotTime: number = 0
   private shotCooldown: number = 400
   private currentWeapon: string = "default"
+  private lastShotDirection: string = "down"
 
   private inventory: ITEMS_TYPE[] = []
 
@@ -41,7 +42,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this)
 
     this.setScale(2)
-    this.setDepth(1)
+    this.setDepth(2)
 
     if (scene.input.keyboard) {
       this.KeysMove = scene.input.keyboard.addKeys({
@@ -152,10 +153,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  private shootBasic(dir: Phaser.Math.Vector2) {
-    const bullet = this.bullets.get(this.x, this.y, TEXTURE_KEYS.BULLET) as Phaser.Physics.Arcade.Sprite;
+  private shootBasic(dir: Phaser.Math.Vector2, speed: number = 200) {
+    const bullet = this.bullets.get(this.x + 3, this.y + 8, TEXTURE_KEYS.BULLET) as Phaser.Physics.Arcade.Sprite;
 
     if (!bullet) return;
+
+    dir = dir.normalize();
+
+    if (Math.abs(dir.x) > Math.abs(dir.y)) {
+      bullet.setDepth(3);
+    } else {
+      bullet.setDepth(1);
+    }
 
     const body = bullet.body as Phaser.Physics.Arcade.Body;
 
@@ -163,8 +172,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     bullet.setVisible(true);
     body.enable = true;
 
-    dir = dir.normalize();
-    bullet.setVelocity(dir.x * 200, dir.y * 200);
+    bullet.setVelocity(dir.x * speed, dir.y * speed);
 
     bullet.setCollideWorldBounds(false);
     body.setAllowGravity(false);
@@ -273,20 +281,39 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     let directionShot = new Phaser.Math.Vector2(0, 0)
 
     if (this.Keyshoot.left.isDown) {
-      directionShot.x -= 1
-      this.setFrame(12)
-    } else if (this.Keyshoot.right.isDown) {
-      directionShot.x += 1
-      this.setFrame(4)
+      directionShot.x -= 1;
+      this.lastShotDirection = "left";
+    }
+    if (this.Keyshoot.right.isDown) {
+      directionShot.x += 1;
+      this.lastShotDirection = "right";
+    }
+    if (this.Keyshoot.up.isDown) {
+      directionShot.y -= 1;
+      this.lastShotDirection = "up";
+    }
+    if (this.Keyshoot.down.isDown) {
+      directionShot.y += 1;
+      this.lastShotDirection = "down";
     }
 
-    if (this.Keyshoot.up.isDown) {
-      directionShot.y -= 1
-      this.setFrame(0)
-    } else if (this.Keyshoot.down.isDown) {
-      directionShot.y += 1
-      this.setFrame(8)
-      console.log("Disparo en dirección:", directionShot);
+    if (!IsPlayerMoving) {
+      this.anims.stop();
+
+      switch (this.lastShotDirection) {
+        case "up":
+          this.setFrame(0);
+          break;
+        case "right":
+          this.setFrame(4);
+          break;
+        case "down":
+          this.setFrame(8);
+          break;
+        case "left":
+          this.setFrame(12);
+          break;
+      }
     }
 
     if (
