@@ -2,6 +2,7 @@ import Phaser from "phaser"
 import Enemy from "./Enemy"
 import Player from "./Player"
 import TEXTURE_KEYS from "../const/TextureKeys"
+import UI from "./UI"
 
 type SpawnPoint = [number, number];
 
@@ -19,14 +20,20 @@ export default class WaveManager {
   private visualMarkers: Phaser.GameObjects.Arc[] = [];
 
   public startWaves: boolean = false
+  private startTimer: boolean = false
+  private remainingTime: number = 0
+  private durationWaves: number = 2 // in minutes
 
   public droppedItemsGroup: Phaser.Physics.Arcade.Group
+
+  private UI: UI
 
   constructor(scene: Phaser.Scene, player: Player, enemiesGroup: Phaser.Physics.Arcade.Group) {
     this.scene = scene
     this.player = player
     this.enemiesGroup = enemiesGroup
     this.droppedItemsGroup = scene.physics.add.group()
+    this.UI = new UI(scene)
   }
 
   public setSpawnPositions(spawnPoints: SpawnPoint[]) {
@@ -51,6 +58,8 @@ export default class WaveManager {
   public startWave() {
     if (this.startWaves) {
       this.nextWave()
+      this.remainingTime = this.durationWaves * 60; // Convert minutes to seconds
+      this.startTimer = true
     }
   }
 
@@ -101,5 +110,20 @@ export default class WaveManager {
       },
       callbackScope: this
     });
+  }
+
+  update(delta: number) {
+    if (!this.startTimer) return
+
+    this.remainingTime -= delta / 1000;
+
+    if (this.remainingTime <= 0) {
+      this.remainingTime = 0;
+      this.startTimer = false;
+      this.startWaves = false;
+    }
+
+    const progress = this.remainingTime / (this.durationWaves * 60);
+    this.UI.updateTimer(progress);
   }
 }
