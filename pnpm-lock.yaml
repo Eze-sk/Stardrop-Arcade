@@ -20,6 +20,9 @@ importers:
 
   apps/journey-of-the-prairie-king:
     dependencies:
+      '@fontsource-variable/pixelify-sans':
+        specifier: ^5.2.6
+        version: 5.2.6
       phaser:
         specifier: ^3.90.0
         version: 3.90.0
@@ -228,6 +231,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fontsource-variable/pixelify-sans@5.2.6':
+    resolution: {integrity: sha512-unHf6GS+5YkEHZZNCIOB+P6vqUU5YW91hRDjAgU4iA2wrPmG+hbj4Xy3jsVD7nklFM62Q3QnD9dU2ZTFF/is9A==}
 
   '@img/sharp-darwin-arm64@0.33.5':
     resolution: {integrity: sha512-UT4p+iz/2H4twwAoLCqfA9UH5pI6DggwKEGuaPy7nCVQ8ZsiY5PIcrRvD1DzuY3qYL07NtIQcWnBSY/heikIFQ==}
@@ -1663,6 +1669,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.25.5':
     optional: true
+
+  '@fontsource-variable/pixelify-sans@5.2.6': {}
 
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:

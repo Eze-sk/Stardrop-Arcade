@@ -13,6 +13,7 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
+    "@fontsource-variable/pixelify-sans": "^5.2.6",
     "phaser": "^3.90.0"
   }
 }
